@@ -13,5 +13,5 @@
     <%= recipe.content %>
   </p>
 
-  <%= image_tag recipe.image_url, alt: "AI-generated image of the recipe" %>
+  <%= image_tag recipe.image_url, alt: "AI-generated image of the recipe" if recipe.image_url? %>
 </div>
