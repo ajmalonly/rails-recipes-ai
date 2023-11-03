@@ -1,5 +1,8 @@
+require "open-uri"
+
 class Recipe < ApplicationRecord
-  after_save :set_content, :set_image_url, if: -> { saved_change_to_name? || saved_change_to_ingredients? }
+  has_one_attached :photo
+  after_save :set_content, :set_photo, if: -> { saved_change_to_name? || saved_change_to_ingredients? }
 
   # VERSION WITH CACHING
   # def content
@@ -21,11 +24,11 @@ class Recipe < ApplicationRecord
     end
   end
 
-  def image_url
-    if super.blank?
-      set_image_url
+  def photo(should_load_photo = true)
+    if should_load_photo && !super().attached?
+      set_photo
     else
-      super
+      super()
     end
   end
 
@@ -43,14 +46,15 @@ class Recipe < ApplicationRecord
     return new_content
   end
 
-  def set_image_url
+  def set_photo
     client = OpenAI::Client.new
-    chaptgpt_response = client.images.generate(parameters: {
+    response = client.images.generate(parameters: {
       prompt: "A recipe image of #{name}", size: "256x256"
     })
-    new_image_url = chaptgpt_response.dig("data", 0, "url")
-
-    update(image_url: new_image_url)
-    return new_image_url
+    id = response["data"][0]["id"]
+    url = response["data"][0]["url"]
+    file =  URI.open(url)
+    photo(false).attach(io: file, filename: "#{id}.jpg", content_type: "image/png")
+    return photo(false)
   end
 end
