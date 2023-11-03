@@ -2,7 +2,10 @@ require "open-uri"
 
 class Recipe < ApplicationRecord
   has_one_attached :photo
-  after_save :set_content, :set_photo, if: -> { saved_change_to_name? || saved_change_to_ingredients? }
+  after_save if: -> { saved_change_to_name? || saved_change_to_ingredients? } do
+    set_content
+    set_photo
+  end
 
   # VERSION WITH CACHING
   # def content
@@ -21,14 +24,6 @@ class Recipe < ApplicationRecord
       set_content
     else
       super
-    end
-  end
-
-  def photo(should_load_photo = true)
-    if should_load_photo && !super().attached?
-      set_photo
-    else
-      super()
     end
   end
 
@@ -51,10 +46,13 @@ class Recipe < ApplicationRecord
     response = client.images.generate(parameters: {
       prompt: "A recipe image of #{name}", size: "256x256"
     })
+
     id = response["data"][0]["id"]
     url = response["data"][0]["url"]
     file =  URI.open(url)
-    photo(false).attach(io: file, filename: "#{id}.jpg", content_type: "image/png")
-    return photo(false)
+
+    photo.purge if photo.attached?
+    photo.attach(io: file, filename: "#{id}.jpg", content_type: "image/png")
+    return photo
   end
 end
