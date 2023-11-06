@@ -13,12 +13,18 @@ class Recipe < ApplicationRecord
   #     client = OpenAI::Client.new
   #     chaptgpt_response = client.chat(parameters: {
   #       model: "gpt-3.5-turbo",
-  #       messages: [{ role: "user", content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}. Give me only the text of the recipe, without any of your own answer like 'Here is a simple recipe'."}]
+  #       messages: [{ role: "user",
+  #                    content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
+  #                              Give me only the text of the recipe, without any of your own answer
+  #                              like 'Here is a simple recipe'."}]
   #     })
   #     return chaptgpt_response["choices"][0]["message"]["content"]
   #   end
   # end
 
+  # The content method checks if the content attribute is blank? (empty or nil);
+  # if so, it populates it using set_content, otherwise,
+  # it returns the existing value.
   def content
     if super.blank?
       set_content
@@ -33,8 +39,13 @@ class Recipe < ApplicationRecord
     client = OpenAI::Client.new
     chaptgpt_response = client.chat(parameters: {
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}. Give me only the text of the recipe, without any of your own answer like 'Here is a simple recipe'."}]
+      messages: [{
+        role: "user",
+        content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
+                  Give me only the text of the recipe, without any of your own answer
+                  like 'Here is a simple recipe'."}]
     })
+    
     new_content = chaptgpt_response["choices"][0]["message"]["content"]
 
     update(content: new_content)
