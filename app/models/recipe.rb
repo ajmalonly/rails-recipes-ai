@@ -1,5 +1,11 @@
+require "open-uri"
+
 class Recipe < ApplicationRecord
-  after_save :set_content, :set_image_url, if: -> { saved_change_to_name? || saved_change_to_ingredients? }
+  has_one_attached :photo
+  after_save if: -> { saved_change_to_name? || saved_change_to_ingredients? } do
+    set_content
+    set_photo
+  end
 
   # VERSION WITH CACHING
   # def content
@@ -7,23 +13,21 @@ class Recipe < ApplicationRecord
   #     client = OpenAI::Client.new
   #     chaptgpt_response = client.chat(parameters: {
   #       model: "gpt-3.5-turbo",
-  #       messages: [{ role: "user", content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}. Give me only the text of the recipe, without any of your own answer like 'Here is a simple recipe'."}]
+  #       messages: [{ role: "user",
+  #                    content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
+  #                              Give me only the text of the recipe, without any of your own answer
+  #                              like 'Here is a simple recipe'."}]
   #     })
   #     return chaptgpt_response["choices"][0]["message"]["content"]
   #   end
   # end
 
+  # The content method checks if the content attribute is blank? (empty or nil);
+  # if so, it populates it using set_content, otherwise,
+  # it returns the existing value.
   def content
     if super.blank?
       set_content
-    else
-      super
-    end
-  end
-
-  def image_url
-    if super.blank?
-      set_image_url
     else
       super
     end
@@ -33,24 +37,33 @@ class Recipe < ApplicationRecord
 
   def set_content
     client = OpenAI::Client.new
-    chaptgpt_response = client.chat(parameters: {
+    response = client.chat(parameters: {
       model: "gpt-3.5-turbo",
-      messages: [{ role: "user", content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}. Give me only the text of the recipe, without any of your own answer like 'Here is a simple recipe'."}]
+      messages: [{
+        role: "user",
+        content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
+                  Give me only the text of the recipe, without any of your own answer
+                  like 'Here is a simple recipe'."}]
     })
-    new_content = chaptgpt_response["choices"][0]["message"]["content"]
+
+    new_content = response["choices"][0]["message"]["content"]
 
     update(content: new_content)
     return new_content
   end
 
-  def set_image_url
+  def set_photo
     client = OpenAI::Client.new
-    chaptgpt_response = client.images.generate(parameters: {
+    response = client.images.generate(parameters: {
       prompt: "A recipe image of #{name}", size: "256x256"
     })
-    new_image_url = chaptgpt_response.dig("data", 0, "url")
 
-    update(image_url: new_image_url)
-    return new_image_url
+    id = response["data"][0]["id"]
+    url = response["data"][0]["url"]
+    file =  URI.open(url)
+
+    photo.purge if photo.attached?
+    photo.attach(io: file, filename: "#{id}.jpg", content_type: "image/png")
+    return photo
   end
 end
