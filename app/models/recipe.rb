@@ -58,12 +58,11 @@ class Recipe < ApplicationRecord
       prompt: "A recipe image of #{name}", size: "256x256"
     })
 
-    id = response["data"][0]["id"]
     url = response["data"][0]["url"]
     file =  URI.open(url)
 
     photo.purge if photo.attached?
-    photo.attach(io: file, filename: "#{id}.jpg", content_type: "image/png")
+    photo.attach(io: file, filename: "ai_generated_image.jpg", content_type: "image/png")
     return photo
   end
 end
