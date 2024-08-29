@@ -59,7 +59,7 @@ class Recipe < ApplicationRecord
     })
 
     url = response["data"][0]["url"]
-    file =  URI.open(url)
+    file =  URI.parse(url).open
 
     photo.purge if photo.attached?
     photo.attach(io: file, filename: "ai_generated_image.jpg", content_type: "image/png")
