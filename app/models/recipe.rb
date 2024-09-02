@@ -12,7 +12,7 @@ class Recipe < ApplicationRecord
   #   Rails.cache.fetch("#{cache_key_with_version}/content") do
   #     client = OpenAI::Client.new
   #     chaptgpt_response = client.chat(parameters: {
-  #       model: "gpt-3.5-turbo",
+  #       model: "gpt-4o-mini",
   #       messages: [{ role: "user",
   #                    content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
   #                              Give me only the text of the recipe, without any of your own answer
@@ -38,7 +38,7 @@ class Recipe < ApplicationRecord
   def set_content
     client = OpenAI::Client.new
     response = client.chat(parameters: {
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [{
         role: "user",
         content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
