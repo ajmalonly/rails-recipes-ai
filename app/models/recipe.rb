@@ -12,7 +12,7 @@ class Recipe < ApplicationRecord
   #   Rails.cache.fetch("#{cache_key_with_version}/content") do
   #     client = OpenAI::Client.new
   #     chaptgpt_response = client.chat(parameters: {
-  #       model: "gpt-3.5-turbo",
+  #       model: "gpt-4o-mini",
   #       messages: [{ role: "user",
   #                    content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
   #                              Give me only the text of the recipe, without any of your own answer
@@ -38,7 +38,7 @@ class Recipe < ApplicationRecord
   def set_content
     client = OpenAI::Client.new
     response = client.chat(parameters: {
-      model: "gpt-3.5-turbo",
+      model: "gpt-4o-mini",
       messages: [{
         role: "user",
         content: "Give me a simple recipe for #{name} with the ingredients #{ingredients}.
@@ -59,7 +59,7 @@ class Recipe < ApplicationRecord
     })
 
     url = response["data"][0]["url"]
-    file =  URI.open(url)
+    file =  URI.parse(url).open
 
     photo.purge if photo.attached?
     photo.attach(io: file, filename: "ai_generated_image.jpg", content_type: "image/png")
