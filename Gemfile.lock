@@ -280,6 +280,10 @@ GEM
       rexml (~> 3.2, >= 3.2.5)
       rubyzip (>= 1.2.2, < 3.0)
       websocket (~> 1.0)
+    solid_cache (0.6.0)
+      activejob (>= 7)
+      activerecord (>= 7)
+      railties (>= 7)
     sprockets (4.2.1)
       concurrent-ruby (~> 1.0)
       rack (>= 2.2.4, < 4)
@@ -340,8 +344,8 @@ DEPENDENCIES
   capybara
   cloudinary
   debug
+  devise
   dotenv-rails
-  error_highlight (>= 0.4.0)
   font-awesome-sass (~> 6.1)
   importmap-rails
   logger (~> 1.6)
@@ -355,6 +359,7 @@ DEPENDENCIES
   sassc-rails
   selenium-webdriver
   simple_form!
+  solid_cache
   sprockets-rails
   stimulus-rails
   turbo-rails
