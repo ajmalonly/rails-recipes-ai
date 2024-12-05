@@ -1,4 +1,9 @@
 Rails.application.routes.draw do
+
+  authenticate :user, ->(u) { u.admin? } do
+    mount MissionControl::Jobs::Engine, at: "/jobs"
+  end
+  
   devise_for :users
   resources :recipes
   root to: "pages#home"
